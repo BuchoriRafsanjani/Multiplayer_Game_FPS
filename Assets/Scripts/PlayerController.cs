@@ -1,32 +1,57 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour {
 
-    public float speed;
-
-    public GameObject ball;
-    public GameObject titikLontar;
-    public float powerLontar;
+	public float speed=3f;
+	public GameObject ball;
+	public GameObject titikLontar;
+	public float powerLontar;
+	public Camera cam;
+	AudioSource audio;
+	public AudioClip Throw;
 
 	// Use this for initialization
 	void Start () {
-		
+		if(!isLocalPlayer)
+		{
+			cam.enabled = false;
+		}
+	}
+
+	public override void OnStartLocalPlayer()
+	{
+		GetComponent<MeshRenderer>().material.color = Color.red;
+		cam.enabled = true;
+		audio = GetComponent<AudioSource> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        transform.Translate(0, 0, Input.GetAxis("Vertical") * speed * Time.deltaTime);
-        transform.Rotate(0, Input.GetAxis("Horizontal") * 60 * Time.deltaTime, 0);
+		if (!isLocalPlayer)
+		{
+			return;
+		}
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GameObject _ball = GameObject.Instantiate(ball, titikLontar.transform.position, titikLontar.transform.rotation);
-            _ball.GetComponent<Rigidbody>().AddForce(_ball.transform.forward
-                * powerLontar);
-            GameObject.Destroy(_ball, 5);
-        } 
+		transform.Translate (0, 0, Input.GetAxis ("Vertical") * speed * Time.deltaTime);
+		transform.Rotate (0, Input.GetAxis ("Horizontal") * 60 * Time.deltaTime, 0);
 
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			audio.PlayOneShot (Throw);
+			CmdFire ();
+		}
 	}
+
+	[Command]
+	void CmdFire()
+	{
+		
+		GameObject _ball = GameObject.Instantiate (ball, titikLontar.transform.position, titikLontar.transform.rotation);
+		_ball.GetComponent<Rigidbody>().velocity = _ball.transform.forward * powerLontar;
+		NetworkServer.Spawn (_ball);
+		GameObject.Destroy (_ball, 5f);
+	}
+
 }

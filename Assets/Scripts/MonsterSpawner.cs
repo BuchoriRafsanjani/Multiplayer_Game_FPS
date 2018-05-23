@@ -1,35 +1,33 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class MonsterSpawner : MonoBehaviour {
+public class MonsterSpawner : NetworkBehaviour {
+	public GameObject monster;
+	public bool isMonsterSpawned = false;
 
-    public GameObject monster;
-    private int enemyCount = 0;
-
-    // Use this for initialization
-    void Start () {
-        StartCoroutine(StartSpawning()); 
-       
-    }
+	// Use this for initialization
+	void Start(){
+		//StartCoroutine (StartSpawning ());
+	}
 	
 	// Update is called once per frame
 	void Update () {
-		
+		if (!isMonsterSpawned) {
+			if (NetworkServer.connections.Count == 2) {
+				if(!isServer){return;}
+				Debug.Log ("Start Spawning Monters");
+				StartCoroutine (StartSpawning ());
+				isMonsterSpawned = true;
+			}
+		}
 	}
 
-    IEnumerator StartSpawning()
-    {
-        yield return new WaitForSeconds(Random.Range(5f, 7f));
-        Instantiate(monster, transform.position, Quaternion.identity);
-        enemyCount++;
-        print(enemyCount);
-        StartCoroutine(StartSpawning());
-
-        if(enemyCount == 3)
-        {
-            StopAllCoroutines(); // Membatasi Enemy muncul hanya 3 saja disetiap GameObjek spawner, karena ada 3 spawner maka jumlah enemynya 9 sebagai batasnya
-        }
-    }
-
+	IEnumerator StartSpawning() {
+		yield return new WaitForSeconds (Random.Range(5f, 7f));
+		GameObject _monster=Instantiate (monster, transform.position, Quaternion.identity);  
+		NetworkServer.Spawn(_monster);
+		StartCoroutine (StartSpawning ());
+	}
 }
