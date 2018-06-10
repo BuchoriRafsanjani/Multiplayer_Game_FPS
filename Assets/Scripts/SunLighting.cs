@@ -11,6 +11,7 @@ public class SunLighting : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
+    
 	void Update () {
 		float angle = Time.deltaTime * speedRotationSun;
 		transform.RotateAround (transform.position, Vector3.forward, angle);

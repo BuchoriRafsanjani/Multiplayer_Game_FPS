@@ -24,5 +24,11 @@ public class Bullet : MonoBehaviour {
 				health.TakeDamage (10);
 			}
 		}
+        else if (col.gameObject.tag.Equals("Arena"))
+        {
+            Destroy(this.gameObject);
+        }
 	}
+
+    
 }
